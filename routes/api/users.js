@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const gravatar = require('gravatar'); 
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 const { check, validationResult } = require('express-validator');
 
 const User = require('../../models/User');
@@ -39,21 +41,32 @@ router.post(
         d: 'mm'   // gives default user image if not found.
       });
 
-      // c) Save user with bcryptjs Encrypted password
+      // c) Create the user with bcryptjs Encrypted password
       user = new User({
         name,
         email,
         avatar,
         password
       });
+      // hash the password:
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
-      await user.save();
+      await user.save(); // save the user
 
-      // d) return jsonwebtoken (TBC)
-      res.send('users route')
-    }
-    catch(error) {
+      // d) give user a jsonwebtoken
+      // Make token's payload, which includes the user's ID:
+      const payload = { user: { id: user.id } };  
+      // Now we sign the token, where we...
+      jwt.sign(
+        payload, // pass in the payload,
+        config.get('jwtSecret'),// pass in the secret,
+        { expiresIn: 360000 },  // set expiration (optional but recommended),
+        (err, token) => {       // callback to token,
+          if (err) throw err;   // throw error if we failed to make token
+          res.json({ token });  // or pass token back to user if succeeded.
+        }
+      );
+    } catch(error) {
       console.error(err.message);
       res.status(500).send('User registered');
     }
