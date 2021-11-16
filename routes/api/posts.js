@@ -196,7 +196,6 @@ router.post(
 router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    console.log(post.text)
 
     // Pull out comment
     const comment = post.comments.find(com => com.id === req.params.comment_id);
@@ -213,8 +212,8 @@ router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
 
     // Get remove index
     const removeIndex = post.comments
-      .map(com => com.user.toString())
-      .indexOf(req.user.id);
+      .map(com => com.id)
+      .indexOf(req.params.comment_id);
 
     post.comments.splice(removeIndex, 1);
     await post.save();
