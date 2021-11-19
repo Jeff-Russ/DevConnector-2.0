@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,29 +14,19 @@ const Register = () => {
   const onChange = e =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = async e => {
+  const onSubmit = e => {
     e.preventDefault();
     if (password !== password2) {
       console.log('Passwords do not match');
     } else {
-      const newUser = { name, email, password }// Rememeber, this is
-      // shorthand syntax for `{name: name, email: email, etc}`
-      
-      try {
-        const config = { headers: {'Content-Type': 'application/json'} }
-        const body = JSON.stringify(newUser)
-        const res = await axios.post('/api/users', body, config)
-        console.log(res.data)
-      } catch (err) {
-        console.error(err.response.data)
-      }
+      console.log(formData);
     }
   };
 
   return (
     <section className="container">
       <h1 className="large text-primary">Sign Up</h1>
-      <p className="lead"><i className="fas fa-user"></i> Create Your Account</p>
+      <p className="lead"><i className="fas fa-user"></i>Create Your Account</p>
       <form className="form" onSubmit={e => onSubmit(e)}>
         <div className="form-group">
           <input
@@ -76,7 +65,7 @@ const Register = () => {
         </div>
         <input type="submit" className="btn btn-primary" value="Register" />
       </form>
-      <p className="my-1">Already have an account? <a href="login.html">Sign In</a></p>
+      <p className="my-1">Already have an account? <Link to="/login">Sign In</Link></p>
     </section>
   );
 };
