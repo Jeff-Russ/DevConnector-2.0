@@ -11,9 +11,9 @@ const App = () => (
     <Navbar />
     <Routes>
       <Route index element={<Landing />} />
-      <Route path='/register' element={<Register/>} />
+      <Route path='/register' element={<Register />} />
       <Route path='/login' element={<Login />} />
-      </Routes>
+    </Routes>
   </Router>
 );
 
