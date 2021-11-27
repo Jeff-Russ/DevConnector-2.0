@@ -1,4 +1,4 @@
-# DevConnector 2.0
+# DevConnector 2.0 
 
 > Social network for developers
 
@@ -6,9 +6,7 @@ This is a MERN stack application from the "MERN Stack Front To Back" course on [
 
 # Updates since course published
 
-The master branch of this repository contains all the changes and updates, so if you're following along with the lectures in the Udemy course and need reference code to compare against please checkout the [origionalcoursecode](https://github.com/bradtraversy/devconnector_2.0/tree/originalcoursecode) branch. Much of the code in this master branch is compatible with course code but be aware that if you adopt some of the changes here, it may require other changes too.
-
-After completing the course you may want to look through this branch and play about with the changes.
+The main changes to DevConnector are that the Express backend has been updated for [Mongoose v6.0.12](https://mongoosejs.com/docs/migrating_to_6.html) and the React frontend has been updated for [React Router v6](https://reactrouter.com/docs/en/v6/upgrading/v5)
 
 ## Changes to GitHub API authentication
 

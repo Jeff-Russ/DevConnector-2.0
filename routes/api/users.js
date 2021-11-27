@@ -1,75 +1,56 @@
 const express = require('express');
 const router = express.Router();
-const gravatar = require('gravatar'); 
+const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator');
-
+const normalize = require('normalize-url');
 const User = require('../../models/User');
 
 // @route    POST api/users
 // @desc     Register user
 // @access   Public
-router.post(
-  '/',
-  [ // Validate user registration submission:
-    check('name', 'Name is required').not().isEmpty(),
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Please enter a password with 6 or more characters')
-    	.isLength({ min: 6 })
-  ],
+router.post('/',
+  check('name', 'Name is required').notEmpty(),
+  check('email', 'Please include a valid email').isEmail(),
+  check('password','Please enter a password with 6 or more characters')
+    .isLength({ min: 6 }),
   async (req, res) => {
-    // First, we respond to any validation errors:
     const errors = validationResult(req);
-    if (!errors.isEmpty()) { 
+    if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
-    const { name, email, password } = req.body; // (for cleaner code)
-
+    const { name, email, password } = req.body;
     try {
-      // a) See if user exists in DB by email
       let user = await User.findOne({ email });
-      if (user) { // if so, send error b/c we don't want multiple emails
+      if (user) {
         return res.status(400).json({ errors: [{ msg: 'User already exists' }] });
       }
-      // b) Get user's gravatar from their email
-      const avatar = gravatar.url(email, {
-        s: '200', // default size
-        r: 'pg',  // rating, so we don't get naughty pix
-        d: 'mm'   // gives default user image if not found.
-      });
-
-      // c) Create the user with bcryptjs Encrypted password
-      user = new User({
-        name,
-        email,
-        avatar,
-        password
-      });
-      // hash the password:
+      const avatar = normalize(
+        gravatar.url(email, { s: '200', r: 'pg', d: 'mm' }),
+        { forceHttps: true }
+      );
+      user = new User({ name, email, avatar, password });
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
-      await user.save(); // save the user
-
-      // d) give user a jsonwebtoken
-      // Make token's payload, which includes the user's ID:
-      const payload = { user: { id: user.id } };  
-      // Now we sign the token, where we...
+      await user.save();
+      const payload = { user: { id: user.id } };
       jwt.sign(
-        payload, // pass in the payload,
-        config.get('jwtSecret'),// pass in the secret,
-        { expiresIn: 360000 },  // set expiration (optional but recommended),
-        (err, token) => {       // callback to token,
-          if (err) throw err;   // throw error if we failed to make token
-          res.json({ token });  // or pass token back to user if succeeded.
+        payload,
+        config.get('jwtSecret'),
+        { expiresIn: '5 days' },
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token });
         }
       );
-    } catch(error) {
+    }
+    catch (err) {
       console.error(err.message);
-      res.status(500).send('User registered');
+      res.status(500).send('Server error');
     }
   }
 );
+
 module.exports = router;
